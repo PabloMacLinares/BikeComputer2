@@ -11,6 +11,10 @@
     tools:context="com.blc.bikecomputer2.ViewMain"
     android:background="@android:color/darker_gray">
 
+    <com.blc.bikecomputer2.custom_views.Compass
+        android:layout_width="100dp"
+        android:layout_height="100dp"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

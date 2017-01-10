@@ -7,10 +7,40 @@
     tools:context="com.blc.bikecomputer2.ViewMain"
     android:background="@android:color/darker_gray">
 
+    <com.blc.bikecomputer2.custom_views.InclinationLevel
+        android:id="@+id/ilPitch"
+        android:layout_width="150dp"
+        android:layout_height="150dp"/>
+
+    <com.blc.bikecomputer2.custom_views.InclinationLevel
+        android:id="@+id/ilRoll"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/ilPitch" />
+
+    <com.blc.bikecomputer2.custom_views.Speedometer
+        android:id="@+id/speedometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="200dp"/>
+
+    <com.blc.bikecomputer2.custom_views.Compass
+        android:id="@+id/compass"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_below="@id/ilPitch"/>
+
+    <!--<com.blc.bikecomputer2.custom_views.Compass
+        android:layout_width="150dp"
+        android:layout_height="150dp"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
 
         <com.blc.bikecomputer2.custom_views.Speedometer
             android:id="@+id/speedometer"
@@ -37,5 +67,5 @@
                 android:layout_weight="1"/>
         </LinearLayout>
 
-    </LinearLayout>
+    </LinearLayout>-->
 </RelativeLayout>
