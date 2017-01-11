@@ -8,10 +8,11 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.blc.bikecomputer2.ViewMain"
-    android:background="@android:color/darker_gray">
+    tools:context="com.blc.bikecomputer2.views.main.ViewMain"
+    android:background="@android:color/black">
 
     <com.blc.bikecomputer2.custom_views.Compass
+        android:id="@+id/compass"
         android:layout_width="100dp"
         android:layout_height="100dp"/>
 

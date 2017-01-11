@@ -19,7 +19,7 @@ public class Compass extends View {
     private int circleColor = Color.BLACK;
     private int lettersColor = Color.BLACK;
 
-    private int angle = 0;
+    private float angle = 0;
 
     public Compass(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,11 +62,11 @@ public class Compass extends View {
         refresh();
     }
 
-    public int getAngle() {
+    public float getAngle() {
         return angle;
     }
 
-    public void setAngle(int angle) {
+    public void setAngle(float angle) {
         this.angle = angle;
         refresh();
     }

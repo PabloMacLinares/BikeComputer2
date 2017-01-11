@@ -160,7 +160,7 @@ public class InclinationLevel extends View {
         paint.setStrokeWidth(10);
         paint.setColor(circleColor);
         paint.setStyle(Paint.Style.STROKE);
-        canvas.drawCircle(width / 2, height / 2, extRadius, paint);
+        canvas.drawCircle(width / 2, height / 2, extRadius + 5, paint);
         canvas.drawCircle(width / 2, height / 2, innerRadius, paint);
     }
 

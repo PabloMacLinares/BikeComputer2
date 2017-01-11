@@ -125,7 +125,7 @@ public class Speedometer extends View {
         }
 
         float DEG2RAD = 3.14159f/180f;
-        int radius = (width / 2) - 60;
+        int radius = (width / 2) - 80;
 
         canvas.save();
         canvas.translate(width / 2, height);
@@ -133,7 +133,7 @@ public class Speedometer extends View {
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
         paint.setColor(numbersColor);
-        paint.setTextSize(40);
+        paint.setTextSize(70);
         paint.setTextAlign(Paint.Align.CENTER);
         int k = 0;
         boolean dot = false;
