@@ -19,7 +19,7 @@ public class InclinationLevel extends View {
     public static final int ROLL = 1;
 
     private int backgroundColor = Color.WHITE;
-    private int foregroundColor = Color.DKGRAY;
+    private int foregroundColor = Color.BLACK;
     private int levelColor = Color.RED;
     private int circleColor = Color.BLACK;
 
@@ -87,7 +87,7 @@ public class InclinationLevel extends View {
         refresh();
     }
 
-    private void refresh(){
+    public void refresh(){
         invalidate();
         requestLayout();
     }

@@ -19,15 +19,15 @@
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/ilPitch" />
 
-    <com.blc.bikecomputer2.custom_views.Speedometer
-        android:id="@+id/speedometer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="200dp"/>
-
     <com.blc.bikecomputer2.custom_views.Compass
         android:id="@+id/compass"
         android:layout_width="140dp"
         android:layout_height="140dp"
         android:layout_below="@id/ilPitch"/>
+
+    <com.blc.bikecomputer2.custom_views.Speedometer
+        android:id="@+id/speedometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="300dp" />
 </RelativeLayout>

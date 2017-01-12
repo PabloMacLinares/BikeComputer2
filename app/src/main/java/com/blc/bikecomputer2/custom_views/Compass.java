@@ -71,7 +71,7 @@ public class Compass extends View {
         refresh();
     }
 
-    private void refresh(){
+    public void refresh(){
         invalidate();
         requestLayout();
     }
