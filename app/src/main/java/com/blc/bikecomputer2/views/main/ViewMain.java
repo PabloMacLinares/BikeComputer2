@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import com.blc.bikecomputer2.R;
 import com.blc.bikecomputer2.custom_views.Compass;
 import com.blc.bikecomputer2.custom_views.InclinationLevel;
+import com.blc.bikecomputer2.custom_views.LightIndicator;
 import com.blc.bikecomputer2.custom_views.Speedometer;
 import com.blc.bikecomputer2.pojo.InfoElement;
 import com.blc.bikecomputer2.sensors.BatterySensor;
@@ -30,6 +31,7 @@ public class ViewMain extends AppCompatActivity{
     private InclinationLevel ilPitch;
     private InclinationLevel ilRoll;
     private Compass compass;
+    private LightIndicator lightIndicator;
 
     private boolean rotationCalibrated = false;
     private float startPitch;
@@ -39,6 +41,8 @@ public class ViewMain extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         init();
         initEvents();
@@ -55,11 +59,11 @@ public class ViewMain extends AppCompatActivity{
 
         speedometer = (Speedometer) findViewById(R.id.speedometer);
         speedometer.setMaxSpeed(60);
+        speedometer.setCurrSpeed(30);
 
-        lightInfo = new InfoElement("", R.drawable.ic_brightness_24dp, this);
+        lightInfo = new InfoElement("", R.drawable.ic_light_24dp, this);
         speedometer.addInfoElement(lightInfo);
-        speedometer.addInfoElement(new InfoElement("PlaceHolder 1", R.drawable.ic_radio_button_checked_24dp, this));
-        speedometer.addInfoElement(new InfoElement("PlaceHolder 2", R.drawable.ic_radio_button_checked_24dp, this));
+        speedometer.addInfoElement(new InfoElement("Not connected", R.drawable.ic_bluetooth_24dp, this));
 
         ilPitch = (InclinationLevel) findViewById(R.id.ilPitch);
         ilPitch.setMode(InclinationLevel.PITCH);
@@ -68,6 +72,8 @@ public class ViewMain extends AppCompatActivity{
         ilRoll.setMode(InclinationLevel.ROLL);
 
         compass = (Compass) findViewById(R.id.compass);
+
+        lightIndicator = (LightIndicator) findViewById(R.id.lightIndicator);
     }
 
     private void initEvents(){
@@ -76,6 +82,9 @@ public class ViewMain extends AppCompatActivity{
             public void valueChanged(Float value) {
                 lightInfo.setText(value + "");
                 speedometer.refresh();
+                if(lightIndicator.getMode() == LightIndicator.AUTO){
+                    lightIndicator.setLightOn(value <= 300);
+                }
             }
         });
 
@@ -123,6 +132,14 @@ public class ViewMain extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 rotationCalibrated = false;
+            }
+        });
+
+        compass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                speedometer.setCurrSpeed(speedometer.getCurrSpeed() - 3);
+                ilRoll.setAngle(ilRoll.getAngle() + 10);
             }
         });
     }

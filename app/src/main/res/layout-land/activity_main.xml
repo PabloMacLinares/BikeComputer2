@@ -30,4 +30,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="300dp" />
+
+    <com.blc.bikecomputer2.custom_views.LightIndicator
+        android:id="@+id/lightIndicator"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_below="@+id/ilRoll"
+        android:layout_toEndOf="@+id/compass"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="36dp" />
 </RelativeLayout>

@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -28,6 +29,8 @@ public class Speedometer extends View {
 
     private Context context;
 
+    private final long ANIMATION_TIME = 300;
+    private MyAnimator myAnimator;
     private int backgroundColor = Color.BLACK;
     private int foregroundColor = Color.WHITE;
     private int speedColor = Color.rgb(255, 128, 0);
@@ -36,20 +39,22 @@ public class Speedometer extends View {
     private int highBatteryColor = Color.GREEN;
     private int batteryColor = lowBatteryColor;
 
-    private float currSpeed = 70;
+    private float currSpeed = 0;
     private float maxSpeed = 100;
-    private float currBattery = 100;
-    private final float MAX_BATTERY = 100;
+    private int currBattery = 0;
+    private final int MAX_BATTERY = 100;
     private int selectedInfoElement = 0;
     private List<InfoElement> infoElements;
     private int idSelectedInfoElement;
     private Bitmap bmpSelectedInfoElement;
     private int idNotSelectedInfoElement;
     private Bitmap bmpNotSelectedInfoElement;
+    private Paint sPaint;
 
     public Speedometer(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+        this.myAnimator = new MyAnimator();
         infoElements = new ArrayList<>();
         if(!this.isInEditMode()) {
             setIdSelectedInfoElement(R.drawable.ic_radio_button_checked_24dp);
@@ -66,6 +71,7 @@ public class Speedometer extends View {
                 }
             });
         }
+        sPaint = new Paint();
     }
 
     public int getBackgroundColor() {
@@ -139,8 +145,8 @@ public class Speedometer extends View {
     }
 
     public void setCurrSpeed(float currSpeed) {
-        this.currSpeed = currSpeed;
-        refresh();
+        if(this.currSpeed != currSpeed)
+            myAnimator.animateSpeedLevel(this.currSpeed, currSpeed, ANIMATION_TIME, Math.round(Math.abs(this.currSpeed - currSpeed) / 40));
     }
 
     public float getMaxSpeed() {
@@ -152,13 +158,13 @@ public class Speedometer extends View {
         refresh();
     }
 
-    public float getCurrBattery() {
+    public int getCurrBattery() {
         return currBattery;
     }
 
-    public void setCurrBattery(float currBattery) {
-        this.currBattery = currBattery;
-        refresh();
+    public void setCurrBattery(int currBattery) {
+        if(this.currBattery != currBattery)
+            myAnimator.animateBatteryLevel(this.currBattery, currBattery, ANIMATION_TIME, Math.round(Math.abs(this.currSpeed - currSpeed) / 40));
     }
 
     public int getSelectedInfoElement() {
@@ -288,8 +294,8 @@ public class Speedometer extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        int width = this.getWidth();
-        int height = this.getHeight();
+        int width = this.getMeasuredWidth();
+        int height = this.getMeasuredHeight();
 
         drawSphere(width, height, canvas);
         drawGuides(width, height, canvas);
@@ -300,49 +306,46 @@ public class Speedometer extends View {
     }
 
     private void drawSphere(int width, int height, Canvas canvas){
-        Paint spherePaint = new Paint();
-        spherePaint.setStyle(Paint.Style.FILL);
-        spherePaint.setColor(backgroundColor);
+        sPaint.setStyle(Paint.Style.FILL);
+        sPaint.setColor(backgroundColor);
 
         canvas.save();
         canvas.translate(width / 2, height / 2);
 
         float radius = getRadius(width, height);
 
-        canvas.drawCircle(0, 0, radius, spherePaint);
+        canvas.drawCircle(0, 0, radius, sPaint);
 
         canvas.restore();
     }
 
     private void drawCircles(int width, int height, Canvas canvas){
         int strokeWidth = 20;
-        Paint circlePaint = new Paint();
-        circlePaint.setAntiAlias(true);
-        circlePaint.setStyle(Paint.Style.STROKE);
-        circlePaint.setStrokeWidth(strokeWidth);
-        circlePaint.setColor(foregroundColor);
+        sPaint.setAntiAlias(true);
+        sPaint.setStyle(Paint.Style.STROKE);
+        sPaint.setStrokeWidth(strokeWidth);
+        sPaint.setColor(foregroundColor);
 
         canvas.save();
         canvas.translate(width / 2, height / 2);
 
         float radius = getRadius(width, height) - strokeWidth;
 
-        canvas.drawCircle(0, 0, radius, circlePaint);
-        canvas.drawCircle(0, 0, radius / 1.4f, circlePaint);
-        circlePaint.setColor(backgroundColor);
-        circlePaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(0, 0, radius / 1.4f, circlePaint);
+        canvas.drawCircle(0, 0, radius, sPaint);
+        canvas.drawCircle(0, 0, radius / 1.4f, sPaint);
+        sPaint.setColor(backgroundColor);
+        sPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(0, 0, radius / 1.4f, sPaint);
 
         canvas.restore();
     }
 
     private void drawSpeedLevel(int width, int height, Canvas canvas){
         int strokeWidth = 10;
-        Paint speedPaint = new Paint();
-        speedPaint.setAntiAlias(true);
-        speedPaint.setStyle(Paint.Style.STROKE);
-        speedPaint.setStrokeWidth(strokeWidth);
-        speedPaint.setColor(speedColor);
+        sPaint.setAntiAlias(true);
+        sPaint.setStyle(Paint.Style.STROKE);
+        sPaint.setStrokeWidth(strokeWidth);
+        sPaint.setColor(speedColor);
 
         canvas.save();
         canvas.translate(width / 2, height / 2);
@@ -350,11 +353,11 @@ public class Speedometer extends View {
         float radius = getRadius(width, height) - 30;
 
         PointF pSpeed = getPointInCircle(radius, (float) Math.toRadians(calcSpeedAngle(120) + 120), new PointF(0, 0));
-        canvas.drawLine(0, 0, pSpeed.x, pSpeed.y, speedPaint);
+        canvas.drawLine(0, 0, pSpeed.x, pSpeed.y, sPaint);
 
-        speedPaint.setStrokeWidth(strokeWidth * 3);
+        sPaint.setStrokeWidth(strokeWidth * 3);
         RectF r = new RectF(-radius + 14, -radius + 14, radius - 14, radius - 14);
-        canvas.drawArc(r, 120, calcSpeedAngle(120), false, speedPaint);
+        canvas.drawArc(r, 120, calcSpeedAngle(120), false, sPaint);
         canvas.restore();
     }
 
@@ -368,11 +371,10 @@ public class Speedometer extends View {
 
     private void drawBatteryLevel(int width, int height, Canvas canvas){
         int strokeWidth = 10;
-        Paint battPaint = new Paint();
-        battPaint.setAntiAlias(true);
-        battPaint.setStyle(Paint.Style.STROKE);
-        battPaint.setStrokeWidth(strokeWidth);
-        battPaint.setColor(getBatteryColor());
+        sPaint.setAntiAlias(true);
+        sPaint.setStyle(Paint.Style.STROKE);
+        sPaint.setStrokeWidth(strokeWidth);
+        sPaint.setColor(getBatteryColor());
 
         canvas.save();
         canvas.translate(width / 2, height / 2);
@@ -380,11 +382,11 @@ public class Speedometer extends View {
         float radius = getRadius(width, height) - 30;
 
         PointF pBattery = getPointInCircle(radius, (float) Math.toRadians(calcBatteryAngle(120) + 120), new PointF(0, 0));
-        canvas.drawLine(0, 0, -pBattery.x, pBattery.y, battPaint);
+        canvas.drawLine(0, 0, -pBattery.x, pBattery.y, sPaint);
 
-        battPaint.setStrokeWidth(strokeWidth * 3);
+        sPaint.setStrokeWidth(strokeWidth * 3);
         RectF r = new RectF(-radius + 14, -radius + 14, radius - 14, radius - 14);
-        canvas.drawArc(r, 60, -calcBatteryAngle(120), false, battPaint);
+        canvas.drawArc(r, 60, -calcBatteryAngle(120), false, sPaint);
         canvas.restore();
     }
 
@@ -398,13 +400,12 @@ public class Speedometer extends View {
 
     private void drawGuides(int width, int height, Canvas canvas){
         int strokeWidth = 10;
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(strokeWidth);
-        paint.setColor(foregroundColor);
-        paint.setTextSize(60);
-        paint.setTextAlign(Paint.Align.LEFT);
+        sPaint.setAntiAlias(true);
+        sPaint.setStyle(Paint.Style.STROKE);
+        sPaint.setStrokeWidth(strokeWidth);
+        sPaint.setColor(foregroundColor);
+        sPaint.setTextSize(60);
+        sPaint.setTextAlign(Paint.Align.LEFT);
 
         canvas.save();
         canvas.translate(width / 2, height / 2);
@@ -414,85 +415,76 @@ public class Speedometer extends View {
         boolean large = true;
         for (PointF p : getSteppedPoints(10, radius - (radius / 8), new PointF(0, 0), 120, 240)) {
             if(large){
-                paint.setStrokeWidth(strokeWidth);
+                sPaint.setStrokeWidth(strokeWidth);
                 large = false;
             }else{
-                paint.setStrokeWidth(strokeWidth / 2);
+                sPaint.setStrokeWidth(strokeWidth / 2);
                 large = true;
             }
-            canvas.drawLine(p.x, p.y, 0, 0, paint);
+            canvas.drawLine(p.x, p.y, 0, 0, sPaint);
         }
 
         large = true;
         for (PointF p : getSteppedPoints(5, radius - (radius / 8), new PointF(0, 0), 60, 0)) {
             if(large){
-                paint.setStrokeWidth(strokeWidth);
+                sPaint.setStrokeWidth(strokeWidth);
                 large = false;
             }else{
-                paint.setStrokeWidth(strokeWidth / 2);
+                sPaint.setStrokeWidth(strokeWidth / 2);
                 large = true;
             }
-            canvas.drawLine(p.x, p.y, 0, 0, paint);
+            canvas.drawLine(p.x, p.y, 0, 0, sPaint);
         }
 
         large = false;
         for (PointF p : getSteppedPoints(5, radius - (radius / 8), new PointF(0, 0), 360, 300)) {
             if(large){
-                paint.setStrokeWidth(strokeWidth);
+                sPaint.setStrokeWidth(strokeWidth);
                 large = false;
             }else{
-                paint.setStrokeWidth(strokeWidth / 2);
+                sPaint.setStrokeWidth(strokeWidth / 2);
                 large = true;
             }
-            canvas.drawLine(p.x, p.y, 0, 0, paint);
+            canvas.drawLine(p.x, p.y, 0, 0, sPaint);
         }
 
-        Paint spherePaint = new Paint();
-        spherePaint.setStyle(Paint.Style.FILL);
-        spherePaint.setColor(backgroundColor);
-        canvas.drawCircle(0, 0, radius - (radius / 6), spherePaint);
+        sPaint.setStyle(Paint.Style.FILL);
+        sPaint.setColor(backgroundColor);
+        canvas.drawCircle(0, 0, radius - (radius / 6), sPaint);
 
         canvas.restore();
     }
 
     private void drawValues(int width, int height, Canvas canvas){
-        Paint speedPaint = new Paint();
-        speedPaint.setAntiAlias(true);
-        speedPaint.setTextAlign(Paint.Align.CENTER);
-        speedPaint.setTextSize(50);
-        speedPaint.setColor(speedColor);
-
-        Paint battPaint = new Paint();
-        battPaint.setAntiAlias(true);
-        battPaint.setTextAlign(Paint.Align.CENTER);
-        battPaint.setTextSize(50);
-        battPaint.setColor(batteryColor);
-
-        Paint textPaint = new Paint();
-        textPaint.setAntiAlias(true);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setTextSize(60);
-        textPaint.setColor(foregroundColor);
-
         canvas.save();
         canvas.translate(width / 2, height / 2);
 
-        float radius = getRadius(width, height) / 1.8f;
+        float radius = getRadius(width, height) / 1.7f;
 
+        sPaint.setAntiAlias(true);
+        sPaint.setTextAlign(Paint.Align.CENTER);
+        sPaint.setTextSize(50);
+        sPaint.setColor(speedColor);
         PointF pSpeed = getPointInCircle(radius, (float) Math.toRadians(calcSpeedAngle(120) + 120), new PointF(0, 0));
-        canvas.drawText(Math.round(currSpeed) + "", pSpeed.x, pSpeed.y, speedPaint);
+        canvas.drawText(Math.round(currSpeed) + "", pSpeed.x, pSpeed.y, sPaint);
 
+        sPaint.setColor(batteryColor);
         PointF pBattery = getPointInCircle(radius, (float) Math.toRadians(calcBatteryAngle(120) + 120), new PointF(0, 0));
-        canvas.drawText(Math.round(currBattery) + "", -pBattery.x, pBattery.y, battPaint);
+        canvas.drawText(Math.round(currBattery) + "", -pBattery.x, pBattery.y, sPaint);
 
+        canvas.restore();
+        canvas.save();
+        canvas.translate(width / 2, height / 1.7f);
+        sPaint.setTextSize(70);
+        sPaint.setColor(foregroundColor);
         if(infoElements.isEmpty()){
-            canvas.drawText("---", 0, 0, textPaint);
+            canvas.drawText("---", 0, 0, sPaint);
         }else {
             String text = infoElements.get(selectedInfoElement).getText();
-            canvas.drawText(text, 0, 0, textPaint);
+            canvas.drawText(text, 0, 10, sPaint);
             if(infoElements.get(selectedInfoElement).getBitmap() != null) {
                 Bitmap bmp = infoElements.get(selectedInfoElement).getBitmap();
-                canvas.drawBitmap(bmp, - bmp.getWidth() / 2, -60 - bmp.getHeight(), textPaint);
+                canvas.drawBitmap(bmp, - bmp.getWidth() / 2, -60 - bmp.getHeight(), sPaint);
             }
             float tWidth = getBmpSelectedInfoElement().getWidth() * infoElements.size() / 2;
             for (int i = 0; i < infoElements.size(); i++) {
@@ -500,20 +492,15 @@ public class Speedometer extends View {
                 if(i == selectedInfoElement){
                     bmpIc = getBmpSelectedInfoElement();
                 }
-                canvas.drawBitmap(bmpIc, bmpIc.getWidth() * i - tWidth, 30, textPaint);
+                canvas.drawBitmap(bmpIc, bmpIc.getWidth() * i - tWidth, 60, sPaint);
             }
         }
-
 
         canvas.restore();
     }
 
     private float getRadius(int width, int height){
-        if(height < width){
-            return height / 2;
-        }else{
-            return width / 2;
-        }
+        return Math.min(width, height) / 2;
     }
 
     private PointF getPointInCircle(float radius, float radAngle, PointF center){
@@ -574,6 +561,133 @@ public class Speedometer extends View {
                 }
                 return false;
             }
+        }
+    }
+
+    private class MyAnimator{
+        AsyncTask<Long, Float, Float> atSpeed = null;
+        AsyncTask<Long, Float, Float> atBattery = null;
+
+        public void animateSpeedLevel(float startValue, float endValue, long durationMillis, int step){
+            if(atSpeed != null){
+                atSpeed.cancel(true);
+            }
+            atSpeed = new AsyncTask<Long, Float, Float>() {
+                @Override
+                protected Float doInBackground(Long... longs) {
+                    long currValue = longs[0];
+                    long endValue = longs[1];
+                    int step = Math.round(longs[3]);
+                    if(step == 0)
+                        step = 1;
+                    if(Math.abs((endValue - currValue) / step) < step){
+                        step = 1;
+                    }else if(currValue == endValue){
+                        return Float.valueOf(endValue);
+                    }
+                    long timeStep = longs[2] / Math.abs((endValue - currValue) / step);
+                    if(currValue < endValue) {
+                        while (currValue < endValue && !isCancelled()) {
+                            try {
+                                currValue += step;
+                                if(currValue >= endValue)
+                                    break;
+                                publishProgress(Float.valueOf(currValue));
+                                Thread.sleep(timeStep);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                    }else{
+                        while (currValue > endValue && !isCancelled()) {
+                            try {
+                                currValue -= step;
+                                if(currValue <= endValue)
+                                    break;
+                                publishProgress(Float.valueOf(currValue));
+                                Thread.sleep(timeStep);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                    }
+                    return Float.valueOf(endValue);
+                }
+
+                @Override
+                protected void onProgressUpdate(Float... values) {
+                    Speedometer.this.currSpeed = Math.round(values[0]);
+                    refresh();
+                }
+
+                @Override
+                protected void onPostExecute(Float aFloat) {
+                    Speedometer.this.currSpeed = Math.round(aFloat);
+                    refresh();
+                }
+            };
+            atSpeed.execute(new Long[]{Long.valueOf(Math.round(startValue)), Long.valueOf(Math.round(endValue)), durationMillis, Long.valueOf(step)});
+        }
+
+        public void animateBatteryLevel(int startValue, int endValue, long durationMillis, int step){
+            if(atBattery != null){
+                atBattery.cancel(true);
+            }
+            atBattery = new AsyncTask<Long, Float, Float>() {
+                @Override
+                protected Float doInBackground(Long... longs) {
+                    long currValue = longs[0];
+                    long endValue = longs[1];
+                    int step = Math.round(longs[3]);
+                    if(step == 0)
+                        step = 1;
+                    if(Math.abs((endValue - currValue) / step) < step){
+                        step = 1;
+                    }else if(currValue == endValue){
+                        return Float.valueOf(endValue);
+                    }
+                    long timeStep = longs[2] / Math.abs((endValue - currValue) / step);
+                    if(currValue < endValue) {
+                        while (currValue < endValue && !isCancelled()) {
+                            try {
+                                currValue += step;
+                                if(currValue >= endValue)
+                                    break;
+                                publishProgress(Float.valueOf(currValue));
+                                Thread.sleep(timeStep);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                    }else{
+                        while (currValue > endValue && !isCancelled()) {
+                            try {
+                                currValue -= step;
+                                if(currValue <= endValue)
+                                    break;
+                                publishProgress(Float.valueOf(currValue));
+                                Thread.sleep(timeStep);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                    }
+                    return Float.valueOf(endValue);
+                }
+
+                @Override
+                protected void onProgressUpdate(Float... values) {
+                    Speedometer.this.currBattery = Math.round(values[0]);
+                    refresh();
+                }
+
+                @Override
+                protected void onPostExecute(Float aFloat) {
+                    Speedometer.this.currBattery = Math.round(aFloat);
+                    refresh();
+                }
+            };
+            atBattery.execute(Long.valueOf(startValue), Long.valueOf(endValue), durationMillis, Long.valueOf(step));
         }
     }
 }
